@@ -17,6 +17,3 @@ wcwidth==0.2.13
 
 # pip install ipdb==0.13.13
 ipdb==0.13.13
-
-# pip install psycopg2==2.9.9
-psycopg2==2.9.9

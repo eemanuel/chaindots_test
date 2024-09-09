@@ -25,7 +25,7 @@ class PublicationModelViewSet(ModelViewSet):
             return PublicationCreateSerializer
         if self.action == "list":
             return PublicationSerializer
-        if self.action == ("comments"):
+        if self.action == "comments":
             return PublicationCommentSerializer
 
     def get_queryset(self):

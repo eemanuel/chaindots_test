@@ -3,6 +3,11 @@ from django.dispatch import receiver
 
 from publications.models import Publication, PublicationComment
 
+__all__ = (
+    "update_user_publications_count",
+    "update_user_comments_count",
+)
+
 
 @receiver(post_save, sender=Publication)
 def update_user_publications_count(sender, instance, created, **kwargs):

@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from publications.models import Publication
+from publications.signals import update_user_comments_count, update_user_publications_count
 from publications.tests.factories import PublicationCommentFactory, PublicationFactory
 from users.tests.factories import UserFactory
 
@@ -58,7 +59,7 @@ class TestPublicationModelViewSet:
 
     def _get_comments(self, pk, authenticate=True):
         headers = self._get_auth_token_headers() if authenticate else dict()
-        return self.client.post(
+        return self.client.get(
             reverse(f"{self.reverse_name}-comments", kwargs={"pk": pk}), headers=headers, format="json"
         )
 
@@ -67,21 +68,27 @@ class TestPublicationModelViewSet:
     @mark.django_db
     def test_create_publication_success(self):
         assert Publication.objects.count() == 0
+        assert self.user.publications_count == 0
 
         response = self._post_data(data={"title": "publication title", "content": "publication content"})
 
         assert response.data["author"] == self.user.id
         assert Publication.objects.count() == 1
+        self.user.refresh_from_db()
+        assert self.user.publications_count == 1
         assert response.status_code == status.HTTP_201_CREATED
 
     @mark.error
     @mark.django_db
     def test_create_publication_bad_data_error(self):
         assert Publication.objects.count() == 0
+        assert self.user.publications_count == 0
 
         response = self._post_data(data={"title": True, "content": [1, 2, 3]})
 
         assert Publication.objects.count() == 0
+        self.user.refresh_from_db()
+        assert self.user.publications_count == 0
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     @mark.success
@@ -97,15 +104,11 @@ class TestPublicationModelViewSet:
         # check page_1 in the following steps:
         response = self._list_data()
 
+        # fmt: off
         assert set(response.data.keys()) == {
-            "next",
-            "previous",
-            "page_number",
-            "page_size",
-            "total_pages",
-            "total_items",
-            "results",
+            'next', 'page_number', 'page_size', 'previous', 'results', 'total_items', 'total_pages'
         }
+        # fmt: on
 
         assert len(response.data["results"]) == 20
 
@@ -194,21 +197,13 @@ class TestPublicationModelViewSet:
         response = self._retrieve_data(pk=pub.id)
         assert set(response.data.keys()) == {"author", "last_3_comments", "publication"}
 
+        # fmt: off
         assert set(response.data["author"].keys()) == {
-            "comments_count",
-            "created",
-            "date_joined",
-            "email",
-            "first_name",
-            "id",
-            "is_active",
-            "is_staff",
-            "is_superuser",
-            "last_login",
-            "last_name",
-            "publications_count",
-            "username",
+            'comments_count', 'created', 'date_joined', 'email', 'first_name', 'id', 'is_active',
+            'is_staff', 'is_superuser', 'last_login', 'last_name', 'publications_count',
+            'username'
         }
+        # fmt: on
         assert response.data["author"]["id"] == self.user.id
 
         for comment_data in response.data["last_3_comments"]:
@@ -239,20 +234,65 @@ class TestPublicationModelViewSet:
 
     @mark.success
     @mark.django_db
-    def test_publication_comment_success(self):
+    def test_publication_comment_create_success(self):
+        assert self.user.publications_count == 0
+
         pub = PublicationFactory(author=self.user)
         assert pub.comments.count() == 0
+
+        self.user.refresh_from_db()
+        assert self.user.publications_count == 1
+        assert self.user.comments_count == 0
 
         response = self._post_comment(pub.id, data={"content": "this is a comment"})
 
         response.data["author"] == self.user.id
         assert pub.comments.count() == 1
+        self.user.refresh_from_db()
+        assert self.user.comments_count == 1
         assert response.status_code == status.HTTP_201_CREATED
 
     @mark.unauthorized
     @mark.django_db
-    def test_follow_without_auth(self):
+    def test_publication_comment_without_auth(self):
         pub = PublicationFactory(author=self.user)
         response = self._post_comment(pub.id, data={"content": "this is a comment"}, authenticate=False)
+        assert response.json()["detail"] == "Authentication credentials were not provided."
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @mark.success
+    @mark.django_db
+    def test_publication_comments_get_success(self):
+        assert self.user.publications_count == 0
+        assert self.user.comments_count == 0
+
+        pub = PublicationFactory(author=self.user)
+        assert pub.comments.count() == 0
+
+        comment_ids = set()
+        for num in range(5):
+            comment = PublicationCommentFactory(author=self.user, publication=pub, content=f"content {num}")
+            comment_ids.add(comment.id)
+
+        self.user.refresh_from_db()
+        assert self.user.publications_count == 1
+        assert self.user.comments_count == 5
+
+        response = self._get_comments(pub.id)
+
+        # fmt: off
+        assert set(response.data.keys()) == {
+            'next', 'page_number', 'page_size', 'previous', 'results', 'total_items', 'total_pages'
+        }
+        # fmt: on
+
+        assert {item["id"] for item in response.data["results"]} == comment_ids
+        assert response.status_code == status.HTTP_200_OK
+
+    @mark.unauthorized
+    @mark.django_db
+    def test_publication_comments_get_without_auth(self):
+        pub = PublicationFactory(author=self.user)
+        response = self._get_comments(pub.id, authenticate=False)
         assert response.json()["detail"] == "Authentication credentials were not provided."
         assert response.status_code == status.HTTP_401_UNAUTHORIZED

@@ -28,7 +28,7 @@ class PublicationFactory(django.DjangoModelFactory):
                 if isinstance(kwargs["created"], datetime)
                 else datetime.strptime(kwargs["created"], "%Y-%m-%d")
             )
-            pub.save(update_fields=["created"])
+            pub.save(update_fields=["created"])  # allow create a Publication with a specific "created" datetime
 
         return pub
 

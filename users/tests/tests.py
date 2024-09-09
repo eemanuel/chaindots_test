@@ -85,15 +85,11 @@ class TestUserModelViewSet:
 
         response = self._list_data()
 
+        # fmt: off
         assert set(response.data.keys()) == {
-            "next",
-            "previous",
-            "page_number",
-            "page_size",
-            "total_pages",
-            "total_items",
-            "results",
+            'next', 'page_number', 'page_size', 'previous', 'results', 'total_items', 'total_pages'
         }
+        # fmt: off
 
         for item in response.data["results"]:
             assert item["id"] in ids
@@ -108,15 +104,11 @@ class TestUserModelViewSet:
 
         response = self._list_data(query_params={"username": "test"})
 
+        # fmt: off
         assert set(response.data.keys()) == {
-            "next",
-            "previous",
-            "page_number",
-            "page_size",
-            "total_pages",
-            "total_items",
-            "results",
+            'next', 'page_number', 'page_size', 'previous', 'results', 'total_items', 'total_pages'
         }
+        # fmt: off
         assert len(response.data["results"]) == 1
         assert response.data["results"][0]["id"] == self.user.id
         assert response.status_code == status.HTTP_200_OK
@@ -132,24 +124,13 @@ class TestUserModelViewSet:
     @mark.django_db
     def test_retrieve_success(self):
         response = self._retrieve_data(pk=self.user.id)
+        # fmt: off
         assert set(response.data.keys()) == {
-            "comments_count",
-            "created",
-            "date_joined",
-            "email",
-            "first_name",
-            "followers",
-            "following",
-            "id",
-            "is_active",
-            "is_staff",
-            "is_superuser",
-            "last_login",
-            "last_name",
-            "password",
-            "publications_count",
-            "username",
+            'comments_count', 'created', 'date_joined', 'email', 'first_name', 'followers',
+            'following', 'id', 'is_active', 'is_staff', 'is_superuser', 'last_login', 'last_name',
+            'password', 'publications_count', 'username'
         }
+        # fmt: off
         assert response.status_code == status.HTTP_200_OK
 
     @mark.unauthorized

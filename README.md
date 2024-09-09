@@ -152,16 +152,31 @@ More info in https://pre-commit.com/ .
 
 ## Quick Start
 
-First, create a new user posting data like: _{"username": "username", "password": "password", "email": "email"}_ to `http://localhost:8000/api/users/`.
+_(examples using the "requests" library)_
+
+First, create a new user posting like:
+```
+response = requests.post(
+    "http://localhost:8000/api/users/",
+    data={"username": "username", "password": "password", "email": "email"}
+)
+```
 You don't need authentication to create a user.
 
-Next, obtain an Authentication Token by posting data like: _{"username": "username", "password": "password"}_ to `http://localhost:8000/api/api-token-auth/`.
-This endpoint returns a response with data like: _{'token': 'c11c179a214bbc4920bb81beb8a0cbb5be868a82'}_
-You can now access all authentication-required endpoints by addingg the obtained token to the request's headers. For example (using the _requests_ library) you can now list all users:
+Next, obtain an Authentication Token by posting like:
+```
+response = requests.post(
+    "http://localhost:8000/api/api-token-auth/",
+    data={"username": "username", "password": "password"}
+)
+```
+This endpoint returns a response with data like:
+_{'token': 'c11c179a214bbc4920bb81beb8a0cbb5be868a82'}_
 
+You can now access all authentication-required endpoints by addingg the obtained token to the request's headers. For example, you can now list all users:
 ```
 response = requests.get(
-    "http://0.0.0.0:8000/api/users/",
+    "http://localhost:8000/api/users/",
     headers={
         "Authorization": "Token c11c179a214bbc4920bb81beb8a0cbb5be868a82"
     }

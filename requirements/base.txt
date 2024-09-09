@@ -1,0 +1,34 @@
+# pip install Django==4.2.16
+asgiref==3.8.1
+Django==4.2.16
+sqlparse==0.5.1
+typing_extensions==4.12.2
+
+# pip install django-rest-framework==0.1.0
+django-rest-framework==0.1.0
+djangorestframework==3.15.2
+
+# pip install pytest==8.3.2
+exceptiongroup==1.2.2
+iniconfig==2.0.0
+packaging==24.1
+pluggy==1.5.0
+pytest==8.3.2
+tomli==2.0.1
+
+# pip install pytest-django==4.9.0
+pytest-django==4.9.0
+
+# pip install factory-boy==3.3.1
+factory_boy==3.3.1
+Faker==28.4.1
+python-dateutil==2.9.0.post0
+six==1.16.0
+
+# pip install django-filter==24.3
+django-filter==24.3
+setuptools==72.1.0
+wheel==0.43.0
+
+# pip install coveragecoverage==7.6.1
+coverage==7.6.1

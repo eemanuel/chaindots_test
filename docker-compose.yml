@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  api:
+    image: "api"
+    env_file:
+      - ./.env
+    build:
+      context: .
+      args:
+        ENVIRONMENT: ${ENVIRONMENT}
+    command: >
+      bash -c "
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db
+    volumes:
+      - .:/source
+    networks:
+      - chaindots
+    ports:
+      - "8000:8000"
+    stdin_open: true
+    tty: true
+
+  db:
+    image: postgres:16.4-alpine3.20
+    environment:
+      POSTGRES_DB: chaindots_db
+      POSTGRES_USER: user_chaindots
+      POSTGRES_PASSWORD: chaindots
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+    networks:
+      - chaindots
+
+networks:
+  chaindots:
+    driver: bridge
+
+volumes:
+  postgres_data: {}
+  redis: {}

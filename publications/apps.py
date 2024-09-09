@@ -1,0 +1,9 @@
+from django.apps import AppConfig
+
+
+class PublicationsConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "publications"
+
+    def ready(self):
+        import publications.signals  # to allow publications's signals

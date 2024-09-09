@@ -274,6 +274,10 @@ class TestPublicationModelViewSet:
             comment = PublicationCommentFactory(author=self.user, publication=pub, content=f"content {num}")
             comment_ids.add(comment.id)
 
+        pub_2 = PublicationFactory()
+        for num in range(2):
+            PublicationCommentFactory(author=pub_2.author, publication=pub_2, content=f"content {num} (2)")
+
         self.user.refresh_from_db()
         assert self.user.publications_count == 1
         assert self.user.comments_count == 5
@@ -287,6 +291,7 @@ class TestPublicationModelViewSet:
         # fmt: on
 
         assert {item["id"] for item in response.data["results"]} == comment_ids
+        assert {item["author"] for item in response.data["results"]} == {self.user.id}
         assert response.status_code == status.HTTP_200_OK
 
     @mark.unauthorized
